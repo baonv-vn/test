@@ -33,7 +33,7 @@ export const useSessionTimer = ({
 
   useEffect(() => {
     if (!sessionId) {
-      setRemainingSeconds(durationRef.current);
+      setRemainingSeconds(durationSeconds);
     }
   }, [durationSeconds, sessionId]);
 
