@@ -199,7 +199,6 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       pendingExerciseIndex: undefined,
       pendingSetIndex: undefined,
       completedWorkoutId: state.workoutId,
-      workoutId: state.workoutId,
     });
     set((current) => ({ savedSession: saveSession(current) }));
   },

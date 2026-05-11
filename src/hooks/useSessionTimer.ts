@@ -21,10 +21,15 @@ export const useSessionTimer = ({
   const runningRef = useRef(false);
   const firedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
+  const durationRef = useRef(durationSeconds);
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
+
+  useEffect(() => {
+    durationRef.current = durationSeconds;
+  }, [durationSeconds]);
 
   useEffect(() => {
     if (intervalRef.current) {
@@ -35,11 +40,11 @@ export const useSessionTimer = ({
     firedRef.current = false;
 
     if (!sessionId) {
-      setRemainingSeconds(durationSeconds);
+      setRemainingSeconds(durationRef.current);
       return undefined;
     }
 
-    setRemainingSeconds(durationSeconds);
+    setRemainingSeconds(durationRef.current);
     intervalRef.current = setInterval(() => {
       setRemainingSeconds((previous) => {
         if (previous <= 1) {
