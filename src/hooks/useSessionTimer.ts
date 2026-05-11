@@ -32,6 +32,12 @@ export const useSessionTimer = ({
   }, [durationSeconds]);
 
   useEffect(() => {
+    if (!sessionId) {
+      setRemainingSeconds(durationRef.current);
+    }
+  }, [durationSeconds, sessionId]);
+
+  useEffect(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
