@@ -8,7 +8,6 @@ type SessionTimerOptions = {
 
 type SessionTimerState = {
   remainingSeconds: number;
-  isRunning: boolean;
 };
 
 export const useSessionTimer = ({
@@ -18,7 +17,6 @@ export const useSessionTimer = ({
 }: SessionTimerOptions): SessionTimerState => {
   const [remainingSeconds, setRemainingSeconds] = useState(durationSeconds);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const runningRef = useRef(false);
   const firedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
   const durationRef = useRef(durationSeconds);
@@ -42,7 +40,6 @@ export const useSessionTimer = ({
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    runningRef.current = false;
     firedRef.current = false;
 
     if (!sessionId) {
@@ -63,25 +60,21 @@ export const useSessionTimer = ({
             clearInterval(intervalRef.current);
             intervalRef.current = null;
           }
-          runningRef.current = false;
           return 0;
         }
         return next;
       });
     }, 1000);
-    runningRef.current = true;
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      runningRef.current = false;
     };
   }, [sessionId]);
 
   return {
     remainingSeconds,
-    isRunning: runningRef.current,
   };
 };
