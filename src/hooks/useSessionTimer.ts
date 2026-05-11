@@ -53,7 +53,8 @@ export const useSessionTimer = ({
     setRemainingSeconds(durationRef.current);
     intervalRef.current = setInterval(() => {
       setRemainingSeconds((previous) => {
-        if (previous <= 1) {
+        const next = previous - 1;
+        if (next <= 0) {
           if (!firedRef.current) {
             firedRef.current = true;
             onCompleteRef.current?.();
@@ -65,7 +66,7 @@ export const useSessionTimer = ({
           runningRef.current = false;
           return 0;
         }
-        return previous - 1;
+        return next;
       });
     }, 1000);
     runningRef.current = true;
