@@ -97,15 +97,6 @@ export const CookingScreen = () => {
     );
   }
 
-  if (!energy) {
-    return (
-      <EmptyStateCard
-        title="Select energy"
-        message="Choose an energy state to see cooking plans."
-      />
-    );
-  }
-
   return (
     <View style={styles.listContainer}>
       {savedSession ? <PrimaryButton label="Resume cooking" onPress={resume} /> : null}
@@ -115,7 +106,12 @@ export const CookingScreen = () => {
           message="Meal finished. Choose another recipe when ready."
         />
       ) : null}
-      {filteredRecipes.length === 0 ? (
+      {!energy ? (
+        <EmptyStateCard
+          title="Select energy"
+          message="Choose an energy state to see cooking plans."
+        />
+      ) : filteredRecipes.length === 0 ? (
         <EmptyStateCard
           title="No recipes match"
           message="Try a different energy level or reset your energy state."

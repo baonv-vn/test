@@ -87,15 +87,6 @@ export const WorkoutScreen = () => {
     );
   }
 
-  if (!energy) {
-    return (
-      <EmptyStateCard
-        title="Select energy"
-        message="Choose an energy state to see workouts."
-      />
-    );
-  }
-
   return (
     <View style={styles.listContainer}>
       {savedSession ? <PrimaryButton label="Resume workout" onPress={resume} /> : null}
@@ -105,7 +96,12 @@ export const WorkoutScreen = () => {
           message="Nice work. Pick another workout when ready."
         />
       ) : null}
-      {filteredWorkouts.length === 0 ? (
+      {!energy ? (
+        <EmptyStateCard
+          title="Select energy"
+          message="Choose an energy state to see workouts."
+        />
+      ) : filteredWorkouts.length === 0 ? (
         <EmptyStateCard
           title="No workouts match"
           message="Try a different energy level or reset your energy state."
