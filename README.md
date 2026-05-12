@@ -85,22 +85,23 @@ android/app/build/outputs/apk/release/app-release.apk
 android/app/build/outputs/bundle/release/app-release.aab
 ```
 
-**Signing note:** For local release builds you must provide a keystore and configure `android/gradle.properties` and `android/app/build.gradle`. EAS Build can manage signing automatically.
+**Signing note:** For local release builds you must provide a keystore and configure Gradle properties (preferably in `~/.gradle/gradle.properties`) and `android/app/build.gradle`. EAS Build can manage signing automatically.
 
 Example keystore generation (PKCS12):
 ```bash
 keytool -genkeypair -v -storetype PKCS12 -keyalg RSA -keysize 2048 -validity 9125 \
   -keystore my-release-key.p12 -alias my-key-alias
 ```
+Note: 9125 days (~25 years) satisfies Google Play’s long-lived signing key requirement.
 
-Example `android/gradle.properties` entries:
+Example `~/.gradle/gradle.properties` entries (recommended):
 ```
 MYAPP_RELEASE_STORE_FILE=my-release-key.p12
 MYAPP_RELEASE_KEY_ALIAS=my-key-alias
 MYAPP_RELEASE_STORE_PASSWORD=your-store-password
 MYAPP_RELEASE_KEY_PASSWORD=your-key-password
 ```
-Security note: never commit real signing credentials or keystore files. Keep secrets in `~/.gradle/gradle.properties` and add `*.p12`/`*.keystore` to `.gitignore`.
+Security note: never commit real signing credentials or keystore files. Keep secrets in `~/.gradle/gradle.properties`, avoid storing them in `android/gradle.properties`, and add `*.p12`/`*.keystore` to `.gitignore`.
 
 Example `android/app/build.gradle` snippet:
 ```
