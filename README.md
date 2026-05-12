@@ -18,8 +18,8 @@ Daily System is a React Native app that combines Workout and Cooking flows with 
 
 ## 4. INSTALLATION STEPS
 ```bash
-git clone https://github.com/baonv-vn/test.git
-cd test
+git clone https://github.com/baonv-vn/test.git daily-system
+cd daily-system
 npm install
 ```
 
