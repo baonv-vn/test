@@ -100,7 +100,7 @@ MYAPP_RELEASE_KEY_ALIAS=my-key-alias
 MYAPP_RELEASE_STORE_PASSWORD=your-store-password
 MYAPP_RELEASE_KEY_PASSWORD=your-key-password
 ```
-Security note: never commit real signing credentials. Keep them in `~/.gradle/gradle.properties` or add the file to `.gitignore`.
+Security note: never commit real signing credentials or keystore files. Keep secrets in `~/.gradle/gradle.properties` and add `*.p12`/`*.keystore` to `.gitignore`.
 
 Example `android/app/build.gradle` snippet:
 ```
