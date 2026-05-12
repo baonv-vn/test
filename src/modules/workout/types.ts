@@ -1,15 +1,16 @@
-import type { EnergyLevel } from './energy';
+export type WorkoutCategory = 'push' | 'pull' | 'legs' | 'core';
 
 export type WorkoutExercise = {
   id: string;
   name: string;
   sets: number;
+  reps: number;
   restSeconds: number;
 };
 
-export type WorkoutTemplate = {
+export type WorkoutRoutine = {
   id: string;
   name: string;
-  minEnergy: EnergyLevel;
+  category: WorkoutCategory;
   exercises: WorkoutExercise[];
 };
