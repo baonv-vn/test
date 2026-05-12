@@ -88,7 +88,6 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
       }),
     startWorkout: async (workout) =>
       withLock('start', async () => {
-        restWatcher.stop();
         const sessionId = createSessionId('workout');
         set({
           status: 'active',

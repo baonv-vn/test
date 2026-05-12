@@ -78,7 +78,6 @@ export const useCookingStore = create<CookingState>((set, get) => {
       }),
     startCooking: async (recipe) =>
       withLock('start', async () => {
-        stepWatcher.stop();
         const sessionId = createSessionId('cook');
         set({
           status: 'active',
