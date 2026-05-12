@@ -84,6 +84,20 @@ android/app/build/outputs/bundle/release/app-release.aab
 
 **Signing note:** For local release builds you must provide a keystore and configure `android/gradle.properties` and `android/app/build.gradle`. EAS Build can manage signing automatically.
 
+Example keystore generation:
+```bash
+keytool -genkeypair -v -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 \
+  -keystore my-release-key.jks -alias my-key-alias
+```
+
+Example `android/gradle.properties` entries:
+```
+MYAPP_RELEASE_STORE_FILE=my-release-key.jks
+MYAPP_RELEASE_KEY_ALIAS=my-key-alias
+MYAPP_RELEASE_STORE_PASSWORD=your-store-password
+MYAPP_RELEASE_KEY_PASSWORD=your-key-password
+```
+
 ## 7. INSTALL APK ON DEVICE
 ADB install (recommended):
 ```bash
