@@ -209,20 +209,20 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
       });
       set((current) => ({ savedSession: saveSession(current) }));
     },
-  endWorkout: () => {
-    const state = get();
-    set({
-      status: 'idle',
-      phase: 'DONE',
-      sessionId: undefined,
-      workoutId: undefined,
-      exerciseIndex: 0,
-      setIndex: 0,
-      ...clearRestState(),
-      completedWorkoutId: state.workoutId,
-    });
-    set((current) => ({ savedSession: saveSession(current) }));
-  },
+    endWorkout: () => {
+      const state = get();
+      set({
+        status: 'idle',
+        phase: 'DONE',
+        sessionId: undefined,
+        workoutId: undefined,
+        exerciseIndex: 0,
+        setIndex: 0,
+        ...clearRestState(),
+        completedWorkoutId: state.workoutId,
+      });
+      set((current) => ({ savedSession: saveSession(current) }));
+    },
     resume: () => {
       const state = get();
       if (!state.savedSession) {
