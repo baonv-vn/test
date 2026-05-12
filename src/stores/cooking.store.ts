@@ -65,6 +65,16 @@ export const useCookingStore = create<CookingState>((set, get) => {
     onExpire: () => get().completeStep(),
   });
 
+  const clearStepTimerState = () => {
+    stepWatcher.stop();
+    return {
+      stepSessionId: undefined,
+      stepDurationSeconds: undefined,
+      stepStartedAt: undefined,
+      stepEndsAt: undefined,
+    };
+  };
+
   return {
     status: 'idle',
     phase: 'IDLE',
@@ -85,10 +95,7 @@ export const useCookingStore = create<CookingState>((set, get) => {
           sessionId,
           recipeId: recipe.id,
           stepIndex: 0,
-          stepSessionId: undefined,
-          stepDurationSeconds: undefined,
-          stepStartedAt: undefined,
-          stepEndsAt: undefined,
+          ...clearStepTimerState(),
           completedRecipeId: undefined,
         });
         set((state) => ({ savedSession: saveSession(state) }));
@@ -117,13 +124,9 @@ export const useCookingStore = create<CookingState>((set, get) => {
         stepWatcher.start();
         return;
       }
-      stepWatcher.stop();
       set({
         phase: 'STEP',
-        stepSessionId: undefined,
-        stepDurationSeconds: undefined,
-        stepStartedAt: undefined,
-        stepEndsAt: undefined,
+        ...clearStepTimerState(),
       });
       set((current) => ({ savedSession: saveSession(current) }));
     },
@@ -138,29 +141,21 @@ export const useCookingStore = create<CookingState>((set, get) => {
       }
       const isLastStep = state.stepIndex >= recipe.steps.length - 1;
       if (isLastStep) {
-        stepWatcher.stop();
         set({
           status: 'idle',
           phase: 'DONE',
           sessionId: undefined,
           recipeId: undefined,
           stepIndex: 0,
-          stepSessionId: undefined,
-          stepDurationSeconds: undefined,
-          stepStartedAt: undefined,
-          stepEndsAt: undefined,
+          ...clearStepTimerState(),
           completedRecipeId: state.recipeId,
         });
         set((current) => ({ savedSession: saveSession(current) }));
         return;
       }
-      stepWatcher.stop();
       set({
         phase: 'NEXT',
-        stepSessionId: undefined,
-        stepDurationSeconds: undefined,
-        stepStartedAt: undefined,
-        stepEndsAt: undefined,
+        ...clearStepTimerState(),
       });
       set((current) => ({ savedSession: saveSession(current) }));
     },
@@ -190,30 +185,22 @@ export const useCookingStore = create<CookingState>((set, get) => {
         stepWatcher.start();
         return;
       }
-      stepWatcher.stop();
       set({
         stepIndex: nextIndex,
         phase: 'STEP',
-        stepSessionId: undefined,
-        stepDurationSeconds: undefined,
-        stepStartedAt: undefined,
-        stepEndsAt: undefined,
+        ...clearStepTimerState(),
       });
       set((current) => ({ savedSession: saveSession(current) }));
     },
     endCooking: () => {
       const state = get();
-      stepWatcher.stop();
       set({
         status: 'idle',
         phase: 'DONE',
         sessionId: undefined,
         recipeId: undefined,
         stepIndex: 0,
-        stepSessionId: undefined,
-        stepDurationSeconds: undefined,
-        stepStartedAt: undefined,
-        stepEndsAt: undefined,
+        ...clearStepTimerState(),
         completedRecipeId: state.recipeId,
       });
       set((current) => ({ savedSession: saveSession(current) }));

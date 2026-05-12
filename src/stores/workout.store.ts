@@ -74,6 +74,18 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
     onExpire: () => get().finishRest(),
   });
 
+  const clearRestState = () => {
+    restWatcher.stop();
+    return {
+      restSessionId: undefined,
+      restDurationSeconds: undefined,
+      restStartedAt: undefined,
+      restEndsAt: undefined,
+      pendingExerciseIndex: undefined,
+      pendingSetIndex: undefined,
+    };
+  };
+
   return {
     status: 'idle',
     phase: 'IDLE',
@@ -96,12 +108,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
           workoutId: workout.id,
           exerciseIndex: 0,
           setIndex: 0,
-          restSessionId: undefined,
-          restDurationSeconds: undefined,
-          restStartedAt: undefined,
-          restEndsAt: undefined,
-          pendingExerciseIndex: undefined,
-          pendingSetIndex: undefined,
+          ...clearRestState(),
           completedWorkoutId: undefined,
         });
         set((state) => ({ savedSession: saveSession(state) }));
@@ -123,7 +130,6 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
       const isLastExercise = state.exerciseIndex >= workout.exercises.length - 1;
 
       if (isLastSet && isLastExercise) {
-        restWatcher.stop();
         set({
           status: 'idle',
           phase: 'DONE',
@@ -131,12 +137,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
           workoutId: undefined,
           exerciseIndex: 0,
           setIndex: 0,
-          restSessionId: undefined,
-          restDurationSeconds: undefined,
-          restStartedAt: undefined,
-          restEndsAt: undefined,
-          pendingExerciseIndex: undefined,
-          pendingSetIndex: undefined,
+          ...clearRestState(),
           completedWorkoutId: state.workoutId,
         });
         set((current) => ({ savedSession: saveSession(current) }));
@@ -166,19 +167,13 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
       if (state.phase !== 'RESTING') {
         return;
       }
-      restWatcher.stop();
       const nextExerciseIndex = state.pendingExerciseIndex ?? state.exerciseIndex;
       const nextSetIndex = state.pendingSetIndex ?? state.setIndex;
       set({
         phase: 'ACTIVE',
         exerciseIndex: nextExerciseIndex,
         setIndex: nextSetIndex,
-        restSessionId: undefined,
-        restDurationSeconds: undefined,
-        restStartedAt: undefined,
-        restEndsAt: undefined,
-        pendingExerciseIndex: undefined,
-        pendingSetIndex: undefined,
+        ...clearRestState(),
       });
       set((current) => ({ savedSession: saveSession(current) }));
     },
@@ -193,7 +188,6 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
       }
       const nextExerciseIndex = state.exerciseIndex + 1;
       if (nextExerciseIndex >= workout.exercises.length) {
-        restWatcher.stop();
         set({
           status: 'idle',
           phase: 'DONE',
@@ -201,51 +195,34 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
           workoutId: undefined,
           exerciseIndex: 0,
           setIndex: 0,
-          restSessionId: undefined,
-          restDurationSeconds: undefined,
-          restStartedAt: undefined,
-          restEndsAt: undefined,
-          pendingExerciseIndex: undefined,
-          pendingSetIndex: undefined,
+          ...clearRestState(),
           completedWorkoutId: state.workoutId,
         });
         set((current) => ({ savedSession: saveSession(current) }));
         return;
       }
-      restWatcher.stop();
       set({
         phase: 'ACTIVE',
         exerciseIndex: nextExerciseIndex,
         setIndex: 0,
-        restSessionId: undefined,
-        restDurationSeconds: undefined,
-        restStartedAt: undefined,
-        restEndsAt: undefined,
-        pendingExerciseIndex: undefined,
-        pendingSetIndex: undefined,
+        ...clearRestState(),
       });
       set((current) => ({ savedSession: saveSession(current) }));
     },
-    endWorkout: () => {
-      const state = get();
-      restWatcher.stop();
-      set({
-        status: 'idle',
-        phase: 'DONE',
-        sessionId: undefined,
-        workoutId: undefined,
-        exerciseIndex: 0,
-        setIndex: 0,
-        restSessionId: undefined,
-        restDurationSeconds: undefined,
-        restStartedAt: undefined,
-        restEndsAt: undefined,
-        pendingExerciseIndex: undefined,
-        pendingSetIndex: undefined,
-        completedWorkoutId: state.workoutId,
-      });
-      set((current) => ({ savedSession: saveSession(current) }));
-    },
+  endWorkout: () => {
+    const state = get();
+    set({
+      status: 'idle',
+      phase: 'DONE',
+      sessionId: undefined,
+      workoutId: undefined,
+      exerciseIndex: 0,
+      setIndex: 0,
+      ...clearRestState(),
+      completedWorkoutId: state.workoutId,
+    });
+    set((current) => ({ savedSession: saveSession(current) }));
+  },
     resume: () => {
       const state = get();
       if (!state.savedSession) {
