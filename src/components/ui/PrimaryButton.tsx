@@ -1,35 +1,35 @@
-import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
 
 type PrimaryButtonProps = {
   label: string;
   onPress: () => void;
-  disabled?: boolean;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'danger';
   style?: ViewStyle;
 };
 
 export const PrimaryButton = ({
   label,
   onPress,
-  disabled,
   variant = 'primary',
   style,
 }: PrimaryButtonProps) => (
   <Pressable
     onPress={onPress}
-    disabled={disabled}
     style={({ pressed }) => [
       styles.base,
-      variant === 'secondary' ? styles.secondary : styles.primary,
-      disabled && styles.disabled,
-      pressed && !disabled && styles.pressed,
+      variant === 'primary' ? styles.primary : null,
+      variant === 'secondary' ? styles.secondary : null,
+      variant === 'danger' ? styles.danger : null,
+      pressed && styles.pressed,
       style,
     ]}
   >
     <Text
       style={[
         styles.label,
-        variant === 'secondary' ? styles.labelSecondary : styles.labelPrimary,
+        variant === 'primary' ? styles.primaryLabel : null,
+        variant === 'secondary' ? styles.secondaryLabel : null,
+        variant === 'danger' ? styles.dangerLabel : null,
       ]}
     >
       {label}
@@ -39,21 +39,21 @@ export const PrimaryButton = ({
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 6,
+    marginVertical: 4,
   },
   primary: {
-    backgroundColor: '#1f2937',
+    backgroundColor: '#1d4ed8',
   },
   secondary: {
     backgroundColor: '#e5e7eb',
   },
-  disabled: {
-    opacity: 0.6,
+  danger: {
+    backgroundColor: '#fee2e2',
   },
   pressed: {
     transform: [{ scale: 0.98 }],
@@ -61,10 +61,13 @@ const styles = StyleSheet.create({
   label: {
     fontWeight: '600',
   },
-  labelPrimary: {
+  primaryLabel: {
     color: '#ffffff',
   },
-  labelSecondary: {
+  secondaryLabel: {
     color: '#111827',
+  },
+  dangerLabel: {
+    color: '#991b1b',
   },
 });
