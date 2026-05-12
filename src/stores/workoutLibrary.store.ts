@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { WorkoutDayPlan, WorkoutExercise } from '../modules/workout/types';
+import { createId } from '../utils/id';
 
 type WorkoutLibraryState = {
   plans: WorkoutDayPlan[];
@@ -71,9 +72,6 @@ const initialPlans: WorkoutDayPlan[] = [
     ],
   },
 ];
-
-const createId = (prefix: string) =>
-  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 export const useWorkoutLibraryStore = create<WorkoutLibraryState>((set) => ({
   plans: initialPlans,

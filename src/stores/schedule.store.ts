@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { DayPeriod, ScheduleItem } from '../modules/home/types';
+import { createId } from '../utils/id';
 
 type ScheduleState = {
   items: ScheduleItem[];
@@ -31,9 +32,6 @@ const initialItems: ScheduleItem[] = [
     title: 'Dinner Cooking Block',
   },
 ];
-
-const createId = (prefix: string) =>
-  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 export const useScheduleStore = create<ScheduleState>((set) => ({
   items: initialItems,

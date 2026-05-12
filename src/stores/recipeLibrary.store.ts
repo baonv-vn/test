@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Recipe, RecipeCategory, RecipeStep } from '../modules/cooking/types';
+import { createId } from '../utils/id';
 
 type RecipeLibraryState = {
   recipes: Recipe[];
@@ -42,9 +43,6 @@ const initialRecipes: Recipe[] = [
     ],
   },
 ];
-
-const createId = (prefix: string) =>
-  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 export const useRecipeLibraryStore = create<RecipeLibraryState>((set) => ({
   recipes: initialRecipes,
