@@ -24,6 +24,7 @@ npm install
 ```
 
 Note: This project’s GitHub repository is currently named `test`, so the clone URL reflects that.
+Optional: If you control the repository, rename it to `daily-system` for clarity.
 
 Environment setup (no required env file by default):
 ```bash
@@ -88,7 +89,7 @@ android/app/build/outputs/bundle/release/app-release.aab
 
 Example keystore generation (PKCS12):
 ```bash
-keytool -genkeypair -v -storetype PKCS12 -keyalg RSA -keysize 2048 -validity 10000 \
+keytool -genkeypair -v -storetype PKCS12 -keyalg RSA -keysize 2048 -validity 9125 \
   -keystore my-release-key.p12 -alias my-key-alias
 ```
 
@@ -99,6 +100,7 @@ MYAPP_RELEASE_KEY_ALIAS=my-key-alias
 MYAPP_RELEASE_STORE_PASSWORD=your-store-password
 MYAPP_RELEASE_KEY_PASSWORD=your-key-password
 ```
+Security note: never commit real signing credentials. Keep them in `~/.gradle/gradle.properties` or add the file to `.gitignore`.
 
 Example `android/app/build.gradle` snippet:
 ```
