@@ -92,7 +92,7 @@ Example keystore generation (PKCS12):
 keytool -genkeypair -v -storetype PKCS12 -keyalg RSA -keysize 2048 -validity 9125 \
   -keystore my-release-key.p12 -alias my-key-alias
 ```
-Note: 9125 days (~25 years) satisfies Google Play’s long-lived signing key requirement.
+Note: 9125 days (~25 years) is a common long-lived key duration; verify current Google Play guidance for any updates.
 
 Example `~/.gradle/gradle.properties` entries (recommended):
 ```
