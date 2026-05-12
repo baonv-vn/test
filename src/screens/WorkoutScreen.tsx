@@ -2,8 +2,7 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useEnergyStore } from '../stores/energy.store';
 import { useWorkoutStore } from '../stores/workout.store';
-import { useSessionTimer } from '../hooks/useSessionTimer';
-import { formatSeconds } from '../utils/format';
+import { TimerText } from '../components/ui/TimerText';
 import { isEnergyAllowed } from '../utils/energy';
 import { LoadingCard } from '../components/ui/LoadingCard';
 import { EmptyStateCard } from '../components/ui/EmptyStateCard';
@@ -19,8 +18,7 @@ export const WorkoutScreen = () => {
   const workoutId = useWorkoutStore((state) => state.workoutId);
   const exerciseIndex = useWorkoutStore((state) => state.exerciseIndex);
   const setIndex = useWorkoutStore((state) => state.setIndex);
-  const restSessionId = useWorkoutStore((state) => state.restSessionId);
-  const restDuration = useWorkoutStore((state) => state.restDuration ?? 0);
+  const restEndsAt = useWorkoutStore((state) => state.restEndsAt);
   const completedWorkoutId = useWorkoutStore((state) => state.completedWorkoutId);
   const savedSession = useWorkoutStore((state) => state.savedSession);
   const loadWorkouts = useWorkoutStore((state) => state.loadWorkouts);
@@ -47,12 +45,6 @@ export const WorkoutScreen = () => {
   const currentWorkout = workouts.find((item) => item.id === workoutId);
   const currentExercise = currentWorkout?.exercises[exerciseIndex];
 
-  const { remainingSeconds } = useSessionTimer({
-    sessionId: restSessionId,
-    durationSeconds: restDuration,
-    onComplete: finishRest,
-  });
-
   const handleStartWorkout = useCallback(
     (workout: WorkoutTemplate) => {
       startWorkout(workout);
@@ -66,15 +58,6 @@ export const WorkoutScreen = () => {
     ),
     [handleStartWorkout]
   );
-
-  if (!energy) {
-    return (
-      <EmptyStateCard
-        title="Select energy"
-        message="Choose an energy state to see workouts."
-      />
-    );
-  }
 
   if (status === 'loading') {
     return <LoadingCard message="Loading workouts" />;
@@ -90,7 +73,7 @@ export const WorkoutScreen = () => {
         {phase === 'RESTING' ? (
           <View style={styles.timerCard}>
             <Text style={styles.timerLabel}>Rest</Text>
-            <Text style={styles.timerValue}>{formatSeconds(remainingSeconds)}</Text>
+            <TimerText endsAt={restEndsAt} style={styles.timerValue} />
             <PrimaryButton label="Skip rest" onPress={finishRest} />
           </View>
         ) : (
@@ -101,6 +84,15 @@ export const WorkoutScreen = () => {
           <PrimaryButton label="End workout" onPress={endWorkout} variant="secondary" />
         </View>
       </View>
+    );
+  }
+
+  if (!energy) {
+    return (
+      <EmptyStateCard
+        title="Select energy"
+        message="Choose an energy state to see workouts."
+      />
     );
   }
 
