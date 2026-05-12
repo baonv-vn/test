@@ -97,10 +97,12 @@ export const useScheduleStore = create<ScheduleState>()(
       },
       markDone: (id) => {
         const timestamp = Date.now();
+        const manualActiveId = get().manualActiveId;
+        const nextManualActiveId = manualActiveId === id ? undefined : manualActiveId;
         const nextItems = get().items.map((item) =>
           item.id === id ? { ...item, status: 'done' as const } : item
         );
-        const next = buildStatuses(nextItems, timestamp, get().manualActiveId === id ? undefined : get().manualActiveId);
+        const next = buildStatuses(nextItems, timestamp, nextManualActiveId);
         set({
           ...next,
           now: timestamp,
@@ -124,6 +126,7 @@ export const useScheduleStore = create<ScheduleState>()(
       },
       updateItem: (id, payload) => {
         const timestamp = Date.now();
+        const manualActiveId = get().manualActiveId;
         const nextItems = get().items.map((item) =>
           item.id === id
             ? {
@@ -134,7 +137,7 @@ export const useScheduleStore = create<ScheduleState>()(
               }
             : item
         );
-        const next = buildStatuses(nextItems, timestamp, get().manualActiveId === id ? id : get().manualActiveId);
+        const next = buildStatuses(nextItems, timestamp, manualActiveId);
         set({
           ...next,
           now: timestamp,

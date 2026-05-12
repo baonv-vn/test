@@ -23,7 +23,7 @@ export const CookingTaskPanel = ({ recipe, onComplete }: CookingTaskPanelProps) 
       <Text style={styles.text}>{`Thời gian dự kiến: ${recipe.cookingTime} phút`}</Text>
       <Text style={styles.text}>{`Nguyên liệu: ${recipe.ingredients.join(', ')}`}</Text>
       {recipe.steps.map((step, index) => (
-        <Text key={`${recipe.id}-${index}`} style={styles.text}>{`Bước ${index + 1}: ${step}`}</Text>
+        <Text key={`step-${index}`} style={styles.text}>{`Bước ${index + 1}: ${step}`}</Text>
       ))}
       <PrimaryButton label="Hoàn thành nấu ăn" onPress={onComplete} />
     </View>

@@ -19,7 +19,7 @@ export const CookingLibraryList = ({ recipes }: CookingLibraryListProps) => (
         <Text style={styles.sub}>{`${mealLabel[recipe.mealType]} • ${recipe.cookingTime} phút`}</Text>
         <Text style={styles.item}>{`Nguyên liệu: ${recipe.ingredients.join(', ')}`}</Text>
         {recipe.steps.map((step, index) => (
-          <Text key={`${recipe.id}-${index}`} style={styles.item}>{`Bước ${index + 1}: ${step}`}</Text>
+          <Text key={`step-${index}`} style={styles.item}>{`Bước ${index + 1}: ${step}`}</Text>
         ))}
         {recipe.tags?.length ? <Text style={styles.tag}>{`Tag: ${recipe.tags.join(', ')}`}</Text> : null}
       </View>
