@@ -36,6 +36,9 @@ const defaultRecipeForm = {
   tagsText: 'standard',
 };
 
+const MIN_REST_SECONDS = 10;
+const DEFAULT_REST_SECONDS = 30;
+
 const parseExercises = (input: string): WorkoutExercise[] =>
   input
     .split('\n')
@@ -48,7 +51,7 @@ const parseExercises = (input: string): WorkoutExercise[] =>
         name: name || `Bài tập ${index + 1}`,
         sets: Math.max(1, Number(sets) || 1),
         reps: Math.max(1, Number(reps) || 1),
-        restSeconds: Math.max(10, Number(restSeconds) || 30),
+        restSeconds: Math.max(MIN_REST_SECONDS, Number(restSeconds) || DEFAULT_REST_SECONDS),
       };
     });
 

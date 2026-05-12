@@ -1,9 +1,16 @@
+const MINUTES_PER_HOUR = 60;
+const MAX_HOUR = 23;
+const MAX_MINUTE = 59;
+
 export const toMinutes = (time: string): number => {
   const [hour, minute] = time.split(':').map(Number);
   if (!Number.isFinite(hour) || !Number.isFinite(minute)) {
     return 0;
   }
-  return Math.max(0, Math.min(23, hour)) * 60 + Math.max(0, Math.min(59, minute));
+  return (
+    Math.max(0, Math.min(MAX_HOUR, hour)) * MINUTES_PER_HOUR +
+    Math.max(0, Math.min(MAX_MINUTE, minute))
+  );
 };
 
 export const getNowMinutes = (timestamp = Date.now()): number => {

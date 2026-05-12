@@ -145,8 +145,10 @@ export const useScheduleStore = create<ScheduleState>()(
       },
       deleteItem: (id) => {
         const timestamp = Date.now();
+        const manualActiveId = get().manualActiveId;
+        const nextManualActiveId = manualActiveId === id ? undefined : manualActiveId;
         const nextItems = get().items.filter((item) => item.id !== id);
-        const next = buildStatuses(nextItems, timestamp, get().manualActiveId === id ? undefined : get().manualActiveId);
+        const next = buildStatuses(nextItems, timestamp, nextManualActiveId);
         set({
           ...next,
           now: timestamp,
