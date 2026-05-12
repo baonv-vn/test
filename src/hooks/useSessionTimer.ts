@@ -23,17 +23,20 @@ export const useSessionTimer = ({ endsAt }: SessionTimerOptions): SessionTimerSt
       return undefined;
     }
 
-    const tick = () => {
+    const initialNow = Date.now();
+    setNow(initialNow);
+    if (initialNow >= endsAt) {
+      return undefined;
+    }
+
+    intervalRef.current = setInterval(() => {
       const current = Date.now();
       setNow(current);
       if (current >= endsAt && intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-    };
-
-    tick();
-    intervalRef.current = setInterval(tick, 1000);
+    }, 1000);
 
     return () => {
       if (intervalRef.current) {
