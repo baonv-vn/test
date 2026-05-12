@@ -267,11 +267,7 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => {
         pendingExerciseIndex: saved.pendingExerciseIndex,
         pendingSetIndex: saved.pendingSetIndex,
       });
-      if (saved.phase === 'RESTING') {
-        if (saved.restEndsAt && Date.now() >= saved.restEndsAt) {
-          get().finishRest();
-          return;
-        }
+      if (saved.phase === 'RESTING' && saved.restEndsAt) {
         restWatcher.start();
       }
     },

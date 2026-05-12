@@ -236,14 +236,8 @@ export const useCookingStore = create<CookingState>((set, get) => {
         stepStartedAt: saved.stepStartedAt,
         stepEndsAt: saved.stepEndsAt,
       });
-      if (saved.phase === 'STEP') {
-        if (saved.stepEndsAt && Date.now() >= saved.stepEndsAt) {
-          get().completeStep();
-          return;
-        }
-        if (saved.stepEndsAt) {
-          stepWatcher.start();
-        }
+      if (saved.phase === 'STEP' && saved.stepEndsAt) {
+        stepWatcher.start();
       }
     },
   };
