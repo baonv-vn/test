@@ -14,9 +14,3 @@ export const createTimerSnapshot = (durationSeconds: number): TimerSnapshot => {
     durationSeconds,
   };
 };
-
-export const clearTimerSnapshot = () => ({
-  startedAt: undefined as number | undefined,
-  endsAt: undefined as number | undefined,
-  durationSeconds: undefined as number | undefined,
-});
