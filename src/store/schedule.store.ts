@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { defaultScheduleItems } from '../modules/timeline/defaultData';
 import { getNowMinutes, isTimeInRange, toMinutes } from '../modules/timeline/time';
 import type { ScheduleItem, ScheduleItemType } from '../modules/timeline/types';
+import { createId } from '../utils/id';
 import { appStorage } from './storage';
 
 type ScheduleInput = {
@@ -113,7 +114,7 @@ export const useScheduleStore = create<ScheduleState>()(
         const nextItems = [
           ...get().items,
           {
-            id: `s-${Date.now()}`,
+            id: createId('s'),
             ...payload,
             status: 'pending' as const,
           },

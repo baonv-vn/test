@@ -11,6 +11,7 @@ import { useRecipeStore } from '../store/recipe.store';
 import { useScheduleStore } from '../store/schedule.store';
 import { useSettingsStore } from '../store/settings.store';
 import { useWorkoutStore } from '../store/workout.store';
+import { createId } from '../utils/id';
 
 const defaultScheduleForm = {
   title: '',
@@ -47,7 +48,7 @@ const parseExercises = (input: string): WorkoutExercise[] =>
     .map((line, index) => {
       const [name, sets, reps, restSeconds] = line.split('|').map((part) => part.trim());
       return {
-        id: `line-${Date.now()}-${index}`,
+        id: createId(`line-${index}`),
         name: name || `Bài tập ${index + 1}`,
         sets: Math.max(1, Number(sets) || 1),
         reps: Math.max(1, Number(reps) || 1),

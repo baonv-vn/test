@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { defaultWorkoutRoutines } from '../modules/workout/defaultData';
 import type { WorkoutCategory, WorkoutExercise, WorkoutRoutine } from '../modules/workout/types';
+import { createId } from '../utils/id';
 import { appStorage } from './storage';
 
 type WorkoutInput = {
@@ -26,12 +27,12 @@ export const useWorkoutStore = create<WorkoutState>()(
           routines: [
             ...state.routines,
             {
-              id: `w-${Date.now()}`,
+              id: createId('w'),
               name: payload.name,
               category: payload.category,
               exercises: payload.exercises.map((exercise, index) => ({
                 ...exercise,
-                id: exercise.id || `e-${Date.now()}-${index}`,
+                id: exercise.id || createId(`e-${index}`),
               })),
             },
           ],
@@ -46,7 +47,7 @@ export const useWorkoutStore = create<WorkoutState>()(
                   category: payload.category,
                   exercises: payload.exercises.map((exercise, index) => ({
                     ...exercise,
-                    id: exercise.id || `e-${id}-${index}`,
+                    id: exercise.id || createId(`e-${id}-${index}`),
                   })),
                 }
               : routine

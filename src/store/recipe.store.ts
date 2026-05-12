@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { defaultRecipes } from '../modules/cooking/defaultData';
 import type { Recipe, RecipeMealType, RecipeTag } from '../modules/cooking/types';
+import { createId } from '../utils/id';
 import { appStorage } from './storage';
 
 type RecipeInput = {
@@ -26,7 +27,7 @@ export const useRecipeStore = create<RecipeState>()(
       recipes: defaultRecipes,
       addRecipe: (payload) =>
         set((state) => ({
-          recipes: [...state.recipes, { id: `r-${Date.now()}`, ...payload }],
+          recipes: [...state.recipes, { id: createId('r'), ...payload }],
         })),
       updateRecipe: (id, payload) =>
         set((state) => ({
