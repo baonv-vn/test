@@ -4,6 +4,9 @@ import { createId } from '../utils/id';
 
 type WorkoutLibraryState = {
   plans: WorkoutDayPlan[];
+  addPlan: (payload: { label: string; focus: string; warmUp: string }) => string;
+  editPlan: (dayId: string, payload: { label: string; focus: string; warmUp: string }) => void;
+  deletePlan: (dayId: string) => void;
   addExercise: (dayId: string, payload: Omit<WorkoutExercise, 'id'>) => void;
   editExercise: (dayId: string, exerciseId: string, payload: Omit<WorkoutExercise, 'id'>) => void;
   deleteExercise: (dayId: string, exerciseId: string) => void;
@@ -75,16 +78,44 @@ const initialPlans: WorkoutDayPlan[] = [
 
 export const useWorkoutLibraryStore = create<WorkoutLibraryState>((set) => ({
   plans: initialPlans,
+  addPlan: (payload) => {
+    const id = createId('workout-day');
+    set((state) => ({
+      plans: [
+        ...state.plans,
+        {
+          id,
+          label: payload.label,
+          focus: payload.focus,
+          warmUp: payload.warmUp,
+          exercises: [],
+        },
+      ],
+    }));
+    return id;
+  },
+  editPlan: (dayId, payload) =>
+    set((state) => ({
+      plans: state.plans.map((plan) =>
+        plan.id === dayId
+          ? {
+              ...plan,
+              label: payload.label,
+              focus: payload.focus,
+              warmUp: payload.warmUp,
+            }
+          : plan
+      ),
+    })),
+  deletePlan: (dayId) =>
+    set((state) => ({ plans: state.plans.filter((plan) => plan.id !== dayId) })),
   addExercise: (dayId, payload) =>
     set((state) => ({
       plans: state.plans.map((plan) =>
         plan.id === dayId
           ? {
               ...plan,
-              exercises: [
-                ...plan.exercises,
-                { ...payload, id: createId(dayId) },
-              ],
+              exercises: [...plan.exercises, { ...payload, id: createId(dayId) }],
             }
           : plan
       ),

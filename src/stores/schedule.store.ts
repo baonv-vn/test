@@ -16,6 +16,7 @@ const initialItems: ScheduleItem[] = [
     time: '07:00',
     type: 'workout',
     title: 'Monday Pull Session',
+    linkedWorkoutId: 'mon-pull',
   },
   {
     id: 'sch-2',
@@ -23,6 +24,7 @@ const initialItems: ScheduleItem[] = [
     time: '12:30',
     type: 'cooking',
     title: 'Lunch Meal Prep',
+    linkedRecipeId: 'r2',
   },
   {
     id: 'sch-3',
@@ -30,6 +32,7 @@ const initialItems: ScheduleItem[] = [
     time: '19:00',
     type: 'cooking',
     title: 'Dinner Cooking Block',
+    linkedRecipeId: 'r3',
   },
 ];
 

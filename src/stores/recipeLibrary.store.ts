@@ -4,10 +4,13 @@ import { createId } from '../utils/id';
 
 type RecipeLibraryState = {
   recipes: Recipe[];
-  addRecipe: (payload: { name: string; category: RecipeCategory; durationMinutes?: number }) => void;
+  addRecipe: (payload: { name: string; category: RecipeCategory; durationMinutes?: number }) => string;
   editRecipe: (recipeId: string, payload: { name: string; category: RecipeCategory; durationMinutes?: number }) => void;
   deleteRecipe: (recipeId: string) => void;
   addRecipeStep: (recipeId: string, payload: Omit<RecipeStep, 'id'>) => void;
+  editRecipeStep: (recipeId: string, stepId: string, payload: Omit<RecipeStep, 'id'>) => void;
+  deleteRecipeStep: (recipeId: string, stepId: string) => void;
+  reorderRecipeStep: (recipeId: string, stepId: string, direction: 'up' | 'down') => void;
 };
 
 const initialRecipes: Recipe[] = [
@@ -46,19 +49,22 @@ const initialRecipes: Recipe[] = [
 
 export const useRecipeLibraryStore = create<RecipeLibraryState>((set) => ({
   recipes: initialRecipes,
-  addRecipe: (payload) =>
+  addRecipe: (payload) => {
+    const id = createId('recipe');
     set((state) => ({
       recipes: [
         ...state.recipes,
         {
-          id: createId('recipe'),
+          id,
           name: payload.name,
           category: payload.category,
           durationMinutes: payload.durationMinutes,
           steps: [],
         },
       ],
-    })),
+    }));
+    return id;
+  },
   editRecipe: (recipeId, payload) =>
     set((state) => ({
       recipes: state.recipes.map((recipe) =>
@@ -73,12 +79,53 @@ export const useRecipeLibraryStore = create<RecipeLibraryState>((set) => ({
         recipe.id === recipeId
           ? {
               ...recipe,
-              steps: [
-                ...recipe.steps,
-                { ...payload, id: createId('step') },
-              ],
+              steps: [...recipe.steps, { ...payload, id: createId('step') }],
             }
           : recipe
       ),
+    })),
+  editRecipeStep: (recipeId, stepId, payload) =>
+    set((state) => ({
+      recipes: state.recipes.map((recipe) =>
+        recipe.id === recipeId
+          ? {
+              ...recipe,
+              steps: recipe.steps.map((step) =>
+                step.id === stepId ? { ...step, ...payload } : step
+              ),
+            }
+          : recipe
+      ),
+    })),
+  deleteRecipeStep: (recipeId, stepId) =>
+    set((state) => ({
+      recipes: state.recipes.map((recipe) =>
+        recipe.id === recipeId
+          ? {
+              ...recipe,
+              steps: recipe.steps.filter((step) => step.id !== stepId),
+            }
+          : recipe
+      ),
+    })),
+  reorderRecipeStep: (recipeId, stepId, direction) =>
+    set((state) => ({
+      recipes: state.recipes.map((recipe) => {
+        if (recipe.id !== recipeId) {
+          return recipe;
+        }
+        const currentIndex = recipe.steps.findIndex((step) => step.id === stepId);
+        if (currentIndex < 0) {
+          return recipe;
+        }
+        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        if (targetIndex < 0 || targetIndex >= recipe.steps.length) {
+          return recipe;
+        }
+        const next = [...recipe.steps];
+        const [moved] = next.splice(currentIndex, 1);
+        next.splice(targetIndex, 0, moved);
+        return { ...recipe, steps: next };
+      }),
     })),
 }));

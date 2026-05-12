@@ -1,4 +1,4 @@
-export type DayPeriod = 'Morning' | 'Noon' | 'Evening';
+export type DayPeriod = 'Morning' | 'Noon' | 'Afternoon' | 'Evening';
 
 export type ScheduleItem = {
   id: string;
@@ -6,4 +6,6 @@ export type ScheduleItem = {
   time: string;
   type: 'workout' | 'cooking';
   title: string;
+  linkedWorkoutId?: string;
+  linkedRecipeId?: string;
 };
