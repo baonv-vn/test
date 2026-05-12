@@ -72,6 +72,9 @@ const initialPlans: WorkoutDayPlan[] = [
   },
 ];
 
+const createId = (prefix: string) =>
+  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
 export const useWorkoutLibraryStore = create<WorkoutLibraryState>((set) => ({
   plans: initialPlans,
   addExercise: (dayId, payload) =>
@@ -82,7 +85,7 @@ export const useWorkoutLibraryStore = create<WorkoutLibraryState>((set) => ({
               ...plan,
               exercises: [
                 ...plan.exercises,
-                { ...payload, id: `${dayId}-${Date.now()}-${Math.random()}` },
+                { ...payload, id: createId(dayId) },
               ],
             }
           : plan

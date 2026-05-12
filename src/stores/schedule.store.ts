@@ -32,11 +32,14 @@ const initialItems: ScheduleItem[] = [
   },
 ];
 
+const createId = (prefix: string) =>
+  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
 export const useScheduleStore = create<ScheduleState>((set) => ({
   items: initialItems,
   addItem: (payload) =>
     set((state) => ({
-      items: [...state.items, { ...payload, id: `schedule-${Date.now()}-${Math.random()}` }],
+      items: [...state.items, { ...payload, id: createId('schedule') }],
     })),
   editItem: (id, payload) =>
     set((state) => ({

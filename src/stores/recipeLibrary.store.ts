@@ -43,6 +43,9 @@ const initialRecipes: Recipe[] = [
   },
 ];
 
+const createId = (prefix: string) =>
+  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
 export const useRecipeLibraryStore = create<RecipeLibraryState>((set) => ({
   recipes: initialRecipes,
   addRecipe: (payload) =>
@@ -50,7 +53,7 @@ export const useRecipeLibraryStore = create<RecipeLibraryState>((set) => ({
       recipes: [
         ...state.recipes,
         {
-          id: `recipe-${Date.now()}-${Math.random()}`,
+          id: createId('recipe'),
           name: payload.name,
           category: payload.category,
           durationMinutes: payload.durationMinutes,
@@ -74,7 +77,7 @@ export const useRecipeLibraryStore = create<RecipeLibraryState>((set) => ({
               ...recipe,
               steps: [
                 ...recipe.steps,
-                { ...payload, id: `step-${Date.now()}-${Math.random()}` },
+                { ...payload, id: createId('step') },
               ],
             }
           : recipe
