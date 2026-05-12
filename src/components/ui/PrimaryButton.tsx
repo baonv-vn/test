@@ -17,9 +17,7 @@ export const PrimaryButton = ({
     onPress={onPress}
     style={({ pressed }) => [
       styles.base,
-      variant === 'primary' ? styles.primary : null,
-      variant === 'secondary' ? styles.secondary : null,
-      variant === 'danger' ? styles.danger : null,
+      styles[variant],
       pressed && styles.pressed,
       style,
     ]}

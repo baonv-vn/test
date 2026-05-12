@@ -26,6 +26,7 @@ export const formatClock = (timestamp = Date.now()): string => {
 export const isTimeInRange = (nowMinutes: number, startTime: string, endTime: string): boolean => {
   const start = toMinutes(startTime);
   const end = toMinutes(endTime);
+  // Handle overnight ranges (e.g., 23:00 to 01:00 next day).
   if (end < start) {
     return nowMinutes >= start || nowMinutes < end;
   }

@@ -47,14 +47,18 @@ const parseExercises = (input: string): WorkoutExercise[] =>
     .filter(Boolean)
     .map((line, index) => {
       const [name, sets, reps, restSeconds] = line.split('|').map((part) => part.trim());
+      if (!name) {
+        return undefined;
+      }
       return {
         id: createId(`line-${index}`),
-        name: name || `Bài tập ${index + 1}`,
+        name,
         sets: Math.max(1, Number(sets) || 1),
         reps: Math.max(1, Number(reps) || 1),
         restSeconds: Math.max(MIN_REST_SECONDS, Number(restSeconds) || DEFAULT_REST_SECONDS),
       };
-    });
+    })
+    .filter((exercise): exercise is WorkoutExercise => Boolean(exercise));
 
 const parseTags = (input: string): RecipeTag[] | undefined => {
   const tags = input

@@ -30,9 +30,9 @@ export const useWorkoutStore = create<WorkoutState>()(
               id: createId('w'),
               name: payload.name,
               category: payload.category,
-              exercises: payload.exercises.map((exercise, index) => ({
+              exercises: payload.exercises.map((exercise) => ({
                 ...exercise,
-                id: exercise.id || createId(`e-${index}`),
+                id: createId('e'),
               })),
             },
           ],
@@ -45,9 +45,9 @@ export const useWorkoutStore = create<WorkoutState>()(
                   ...routine,
                   name: payload.name,
                   category: payload.category,
-                  exercises: payload.exercises.map((exercise, index) => ({
+                  exercises: payload.exercises.map((exercise) => ({
                     ...exercise,
-                    id: exercise.id || createId(`e-${id}-${index}`),
+                    id: createId('e'),
                   })),
                 }
               : routine

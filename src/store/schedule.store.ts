@@ -160,7 +160,9 @@ export const useScheduleStore = create<ScheduleState>()(
       name: 'daily-schedule-store',
       storage: appStorage,
       onRehydrateStorage: () => (state) => {
-        state?.refreshByTime(Date.now());
+        if (state) {
+          state.refreshByTime(Date.now());
+        }
       },
     }
   )

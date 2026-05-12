@@ -25,10 +25,10 @@ export const HomeScreen = ({ onOpenSettings }: HomeScreenProps) => {
   const recipes = useRecipeStore((state) => state.recipes);
 
   const activeWorkout = activeTask?.type === 'workout'
-    ? routines.find((routine) => routine.id === activeTask.workoutId) ?? routines[0]
+    ? routines.find((routine) => routine.id === activeTask.workoutId)
     : undefined;
   const activeRecipe = activeTask?.type === 'cooking'
-    ? recipes.find((recipe) => recipe.id === activeTask.recipeId) ?? recipes[0]
+    ? recipes.find((recipe) => recipe.id === activeTask.recipeId)
     : undefined;
 
   return (
