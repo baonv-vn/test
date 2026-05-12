@@ -2,8 +2,7 @@ import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { useEnergyStore } from '../stores/energy.store';
 import { useCookingStore } from '../stores/cooking.store';
-import { useSessionTimer } from '../hooks/useSessionTimer';
-import { formatSeconds } from '../utils/format';
+import { TimerText } from '../components/ui/TimerText';
 import { isEnergyAllowed } from '../utils/energy';
 import { LoadingCard } from '../components/ui/LoadingCard';
 import { EmptyStateCard } from '../components/ui/EmptyStateCard';
@@ -18,8 +17,7 @@ export const CookingScreen = () => {
   const recipes = useCookingStore((state) => state.recipes);
   const recipeId = useCookingStore((state) => state.recipeId);
   const stepIndex = useCookingStore((state) => state.stepIndex);
-  const stepSessionId = useCookingStore((state) => state.stepSessionId);
-  const stepDuration = useCookingStore((state) => state.stepDuration ?? 0);
+  const stepEndsAt = useCookingStore((state) => state.stepEndsAt);
   const completedRecipeId = useCookingStore((state) => state.completedRecipeId);
   const savedSession = useCookingStore((state) => state.savedSession);
   const loadRecipes = useCookingStore((state) => state.loadRecipes);
@@ -46,12 +44,6 @@ export const CookingScreen = () => {
   const currentRecipe = recipes.find((item) => item.id === recipeId);
   const currentStep = currentRecipe?.steps[stepIndex];
 
-  const { remainingSeconds } = useSessionTimer({
-    sessionId: stepSessionId,
-    durationSeconds: stepDuration,
-    onComplete: completeStep,
-  });
-
   const handleStartCooking = useCallback(
     (recipe: RecipeTemplate) => {
       startCooking(recipe);
@@ -65,15 +57,6 @@ export const CookingScreen = () => {
     ),
     [handleStartCooking]
   );
-
-  if (!energy) {
-    return (
-      <EmptyStateCard
-        title="Select energy"
-        message="Choose an energy state to see cooking plans."
-      />
-    );
-  }
 
   if (status === 'loading') {
     return <LoadingCard message="Loading recipes" />;
@@ -95,9 +78,7 @@ export const CookingScreen = () => {
             <Text style={styles.stepText}>{currentStep.description}</Text>
             {currentStep.durationSeconds ? (
               <View style={styles.timerRow}>
-                <Text style={styles.timerValue}>
-                  {formatSeconds(remainingSeconds)}
-                </Text>
+                <TimerText endsAt={stepEndsAt} style={styles.timerValue} />
                 <PrimaryButton label="Skip timer" onPress={completeStep} />
               </View>
             ) : (
@@ -113,6 +94,15 @@ export const CookingScreen = () => {
         ) : null}
         <PrimaryButton label="End cooking" onPress={endCooking} variant="secondary" />
       </View>
+    );
+  }
+
+  if (!energy) {
+    return (
+      <EmptyStateCard
+        title="Select energy"
+        message="Choose an energy state to see cooking plans."
+      />
     );
   }
 
