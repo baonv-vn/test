@@ -1,300 +1,219 @@
-import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useMemo } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { EnergySelector } from '../../../components/feature/EnergySelector';
+import { useCookingStore } from '../../../stores/cooking.store';
 import { useEditModeStore } from '../../../stores/editMode.store';
+import { useEnergyStore } from '../../../stores/energy.store';
 import { useScheduleStore } from '../../../stores/schedule.store';
+import { useWorkoutStore } from '../../../stores/workout.store';
 import type { DayPeriod, ScheduleItem } from '../types';
 
-const PERIODS: DayPeriod[] = ['Morning', 'Noon', 'Evening'];
+type HomeScreenProps = {
+  onStartWorkout: () => void;
+  onStartCooking: () => void;
+  onResumeWorkout: () => void;
+  onResumeCooking: () => void;
+  onOpenScheduleItem: (item: ScheduleItem) => void;
+  onOpenScheduleEditor: (itemId?: string) => void;
+};
 
-export const HomeScreen = () => {
+const PERIOD_ORDER: DayPeriod[] = ['Morning', 'Noon', 'Afternoon', 'Evening'];
+
+export const HomeScreen = ({
+  onStartWorkout,
+  onStartCooking,
+  onResumeWorkout,
+  onResumeCooking,
+  onOpenScheduleItem,
+  onOpenScheduleEditor,
+}: HomeScreenProps) => {
   const isEditMode = useEditModeStore((state) => state.isEditMode);
-  const items = useScheduleStore((state) => state.items);
-  const addItem = useScheduleStore((state) => state.addItem);
-  const editItem = useScheduleStore((state) => state.editItem);
-  const deleteItem = useScheduleStore((state) => state.deleteItem);
+  const energy = useEnergyStore((state) => state.energy);
+  const setEnergy = useEnergyStore((state) => state.setEnergy);
+  const clearEnergy = useEnergyStore((state) => state.clearEnergy);
 
-  const [formPeriod, setFormPeriod] = useState<DayPeriod>('Morning');
-  const [formType, setFormType] = useState<'workout' | 'cooking'>('workout');
-  const [formTime, setFormTime] = useState('08:00');
-  const [formTitle, setFormTitle] = useState('');
+  const scheduleItems = useScheduleStore((state) => state.items);
 
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const workoutSavedSession = useWorkoutStore((state) => state.savedSession);
+  const cookingSavedSession = useCookingStore((state) => state.savedSession);
 
   const grouped = useMemo(() => {
-    return PERIODS.map((period) => ({
+    return PERIOD_ORDER.map((period) => ({
       period,
-      items: items.filter((item) => item.period === period),
-    }));
-  }, [items]);
-
-  const resetForm = () => {
-    setFormPeriod('Morning');
-    setFormType('workout');
-    setFormTime('08:00');
-    setFormTitle('');
-  };
-
-  const submitNewItem = () => {
-    if (!isEditMode || !formTitle.trim()) {
-      return;
-    }
-    addItem({
-      period: formPeriod,
-      type: formType,
-      time: formTime,
-      title: formTitle.trim(),
-    });
-    resetForm();
-  };
-
-  const submitEdit = (item: ScheduleItem) => {
-    if (!isEditMode || !formTitle.trim()) {
-      return;
-    }
-    editItem(item.id, {
-      period: formPeriod,
-      type: formType,
-      time: formTime,
-      title: formTitle.trim(),
-    });
-    setEditingId(null);
-    resetForm();
-  };
-
-  const startEdit = (item: ScheduleItem) => {
-    setEditingId(item.id);
-    setFormPeriod(item.period);
-    setFormType(item.type);
-    setFormTime(item.time);
-    setFormTitle(item.title);
-  };
+      items: scheduleItems
+        .filter((item) => item.period === period)
+        .sort((a, b) => a.time.localeCompare(b.time)),
+    })).filter((group) => group.items.length > 0);
+  }, [scheduleItems]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.description}>Today timeline tracker (read-only by default)</Text>
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Energy</Text>
+        <EnergySelector energy={energy} onSelect={setEnergy} onClear={clearEnergy} />
+      </View>
 
-      {grouped.map((group) => (
-        <View key={group.period} style={styles.block}>
-          <Text style={styles.blockTitle}>{group.period}</Text>
-          {group.items.length === 0 ? <Text style={styles.empty}>No scheduled items</Text> : null}
-          {group.items.map((item) => (
-            <View key={item.id} style={styles.itemCard}>
-              <View style={styles.itemMain}>
-                <Text style={styles.itemTime}>{item.time}</Text>
-                <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemType}>{item.type === 'workout' ? 'Workout block' : 'Cooking block'}</Text>
-              </View>
-              {isEditMode ? (
-                <View style={styles.inlineActions}>
-                  <Pressable style={styles.smallBtn} onPress={() => startEdit(item)}>
-                    <Text style={styles.smallBtnText}>Edit</Text>
-                  </Pressable>
-                  <Pressable style={[styles.smallBtn, styles.danger]} onPress={() => deleteItem(item.id)}>
-                    <Text style={styles.smallBtnText}>Delete</Text>
-                  </Pressable>
-                </View>
-              ) : null}
-            </View>
-          ))}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Quick actions</Text>
+        <View style={styles.row}>
+          <Pressable style={styles.primaryBtn} onPress={onStartWorkout}>
+            <Text style={styles.primaryText}>Start Workout</Text>
+          </Pressable>
+          <Pressable style={styles.primaryBtn} onPress={onStartCooking}>
+            <Text style={styles.primaryText}>Start Cooking</Text>
+          </Pressable>
         </View>
-      ))}
-
-      {isEditMode ? (
-        <View style={styles.formCard}>
-          <Text style={styles.formTitle}>{editingId ? 'Edit schedule item' : 'Add schedule item'}</Text>
-          <TextInput style={styles.input} value={formTitle} onChangeText={setFormTitle} placeholder="Title" />
-          <TextInput style={styles.input} value={formTime} onChangeText={setFormTime} placeholder="Time (HH:mm)" />
-
-          <View style={styles.segmentRow}>
-            {PERIODS.map((period) => (
-              <Pressable
-                key={period}
-                style={[styles.segment, formPeriod === period && styles.segmentActive]}
-                onPress={() => setFormPeriod(period)}
-              >
-                <Text style={styles.segmentText}>{period}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <View style={styles.segmentRow}>
-            {(['workout', 'cooking'] as const).map((type) => (
-              <Pressable
-                key={type}
-                style={[styles.segment, formType === type && styles.segmentActive]}
-                onPress={() => setFormType(type)}
-              >
-                <Text style={styles.segmentText}>{type}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {editingId ? (
-            <View style={styles.formActions}>
-              <Pressable
-                style={styles.actionBtn}
-                onPress={() => {
-                  const current = items.find((item) => item.id === editingId);
-                  if (current) {
-                    submitEdit(current);
-                  }
-                }}
-              >
-                <Text style={styles.actionBtnText}>Save</Text>
-              </Pressable>
-              <Pressable style={styles.actionBtnSecondary} onPress={() => setEditingId(null)}>
-                <Text style={styles.actionBtnTextSecondary}>Cancel</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <Pressable style={styles.actionBtn} onPress={submitNewItem}>
-              <Text style={styles.actionBtnText}>Add schedule item</Text>
+        <View style={styles.row}>
+          {workoutSavedSession ? (
+            <Pressable style={styles.secondaryBtn} onPress={onResumeWorkout}>
+              <Text style={styles.secondaryText}>Resume Workout</Text>
             </Pressable>
-          )}
+          ) : null}
+          {cookingSavedSession ? (
+            <Pressable style={styles.secondaryBtn} onPress={onResumeCooking}>
+              <Text style={styles.secondaryText}>Resume Cooking</Text>
+            </Pressable>
+          ) : null}
         </View>
-      ) : null}
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.headerRow}>
+          <Text style={styles.sectionTitle}>Today schedule</Text>
+          {isEditMode ? (
+            <Pressable onPress={() => onOpenScheduleEditor()}>
+              <Text style={styles.linkText}>Add / Edit / Delete</Text>
+            </Pressable>
+          ) : null}
+        </View>
+        {grouped.length === 0 ? <Text style={styles.empty}>No schedule items</Text> : null}
+        {grouped.map((group) => (
+          <View key={group.period} style={styles.groupBlock}>
+            <Text style={styles.groupTitle}>{group.period}</Text>
+            {group.items.map((item) => (
+              <View key={item.id} style={styles.itemCard}>
+                <View style={styles.itemMain}>
+                  <Text style={styles.itemTime}>{item.time}</Text>
+                  <Text style={styles.itemTitle}>{item.title}</Text>
+                  <Text style={styles.itemType}>{item.type === 'workout' ? 'Workout' : 'Cooking'}</Text>
+                </View>
+                <View style={styles.itemActions}>
+                  <Pressable onPress={() => onOpenScheduleItem(item)}>
+                    <Text style={styles.linkText}>Open</Text>
+                  </Pressable>
+                  {isEditMode ? (
+                    <Pressable onPress={() => onOpenScheduleEditor(item.id)}>
+                      <Text style={styles.linkText}>Edit</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    gap: 14,
+    gap: 12,
     paddingBottom: 24,
   },
-  description: {
-    fontSize: 14,
-    color: '#475569',
-  },
-  block: {
+  card: {
     backgroundColor: '#ffffff',
-    borderRadius: 14,
     borderWidth: 1,
     borderColor: '#e2e8f0',
+    borderRadius: 14,
     padding: 12,
     gap: 10,
   },
-  blockTitle: {
-    fontSize: 18,
+  sectionTitle: {
     fontWeight: '700',
-    color: '#0f172a',
-  },
-  empty: {
-    color: '#64748b',
-  },
-  itemCard: {
-    borderRadius: 10,
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    padding: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 10,
-  },
-  itemMain: {
-    flex: 1,
-    gap: 2,
-  },
-  itemTime: {
-    fontWeight: '700',
-    color: '#1d4ed8',
-  },
-  itemTitle: {
-    fontWeight: '600',
-    color: '#0f172a',
-  },
-  itemType: {
-    color: '#475569',
-    fontSize: 12,
-  },
-  inlineActions: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  smallBtn: {
-    backgroundColor: '#334155',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  danger: {
-    backgroundColor: '#b91c1c',
-  },
-  smallBtnText: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  formCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    padding: 12,
-    gap: 10,
-  },
-  formTitle: {
     fontSize: 16,
-    fontWeight: '700',
     color: '#0f172a',
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    backgroundColor: '#ffffff',
-  },
-  segmentRow: {
+  row: {
     flexDirection: 'row',
     gap: 8,
     flexWrap: 'wrap',
   },
-  segment: {
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  segmentActive: {
-    backgroundColor: '#e2e8f0',
-  },
-  segmentText: {
-    color: '#0f172a',
-    fontWeight: '600',
-    textTransform: 'capitalize',
-  },
-  formActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  actionBtn: {
+  primaryBtn: {
     backgroundColor: '#111827',
     borderRadius: 10,
-    paddingHorizontal: 10,
     paddingVertical: 10,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+    minWidth: 140,
   },
-  actionBtnText: {
+  primaryText: {
     color: '#ffffff',
     fontWeight: '700',
   },
-  actionBtnSecondary: {
+  secondaryBtn: {
     backgroundColor: '#e2e8f0',
     borderRadius: 10,
-    paddingHorizontal: 10,
     paddingVertical: 10,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
+    minWidth: 140,
   },
-  actionBtnTextSecondary: {
+  secondaryText: {
     color: '#0f172a',
     fontWeight: '700',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  groupBlock: {
+    gap: 8,
+  },
+  groupTitle: {
+    color: '#1d4ed8',
+    fontWeight: '700',
+  },
+  itemCard: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  itemMain: {
+    flex: 1,
+  },
+  itemActions: {
+    gap: 6,
+    alignItems: 'flex-end',
+  },
+  itemTime: {
+    color: '#1d4ed8',
+    fontWeight: '700',
+  },
+  itemTitle: {
+    color: '#0f172a',
+    fontWeight: '600',
+  },
+  itemType: {
+    color: '#64748b',
+    fontSize: 12,
+  },
+  linkText: {
+    color: '#2563eb',
+    fontWeight: '600',
+  },
+  empty: {
+    color: '#64748b',
   },
 });

@@ -9,69 +9,232 @@ import {
 } from 'react-native';
 import { HomeScreen } from '../modules/home/screens/HomeScreen';
 import { WorkoutLibraryScreen } from '../modules/workout/screens/WorkoutLibraryScreen';
-import { WorkoutDetailScreen } from '../modules/workout/screens/WorkoutDetailScreen';
 import { CookingLibraryScreen } from '../modules/cooking/screens/CookingLibraryScreen';
-import { RecipeDetailScreen } from '../modules/cooking/screens/RecipeDetailScreen';
+import { WorkoutSessionScreen } from '../modules/workout/screens/WorkoutSessionScreen';
+import { CookingSessionScreen } from '../modules/cooking/screens/CookingSessionScreen';
+import { WorkoutEditorScreen } from '../modules/workout/screens/WorkoutEditorScreen';
+import { RecipeEditorScreen } from '../modules/cooking/screens/RecipeEditorScreen';
+import { ScheduleEditorScreen } from '../modules/home/screens/ScheduleEditorScreen';
+import { ScheduleDetailScreen } from '../modules/home/screens/ScheduleDetailScreen';
 import { useEditModeStore } from '../stores/editMode.store';
+import type { ScheduleItem } from '../modules/home/types';
 import type { WorkoutDayPlan } from '../modules/workout/types';
 import type { Recipe } from '../modules/cooking/types';
+import { useWorkoutLibraryStore } from '../stores/workoutLibrary.store';
+import { useRecipeLibraryStore } from '../stores/recipeLibrary.store';
+import { toRuntimeWorkoutTemplate } from '../modules/workout/runtime';
+import { useWorkoutStore } from '../stores/workout.store';
+import { toRuntimeRecipeTemplate } from '../modules/cooking/runtime';
+import { useCookingStore } from '../stores/cooking.store';
+import { useScheduleStore } from '../stores/schedule.store';
 
 type DrawerRoute = 'Home' | 'Workout Library' | 'Cooking Library';
 
-type StackState = {
-  workoutDayId?: string;
-  recipeId?: string;
-};
+type StackScreen =
+  | { key: 'NONE' }
+  | { key: 'WORKOUT_SESSION' }
+  | { key: 'COOKING_SESSION' }
+  | { key: 'WORKOUT_EDITOR'; dayId?: string }
+  | { key: 'RECIPE_EDITOR'; recipeId?: string }
+  | { key: 'SCHEDULE_EDITOR'; itemId?: string }
+  | { key: 'SCHEDULE_DETAIL'; itemId: string };
 
 export const AppNavigator = () => {
   const [activeRoute, setActiveRoute] = useState<DrawerRoute>('Home');
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const [stackState, setStackState] = useState<StackState>({});
+  const [stackScreen, setStackScreen] = useState<StackScreen>({ key: 'NONE' });
+
   const isEditMode = useEditModeStore((state) => state.isEditMode);
   const toggleEditMode = useEditModeStore((state) => state.toggleEditMode);
 
+  const workoutPlans = useWorkoutLibraryStore((state) => state.plans);
+  const recipes = useRecipeLibraryStore((state) => state.recipes);
+  const scheduleItems = useScheduleStore((state) => state.items);
+
+  const startWorkout = useWorkoutStore((state) => state.startWorkout);
+  const resumeWorkout = useWorkoutStore((state) => state.resume);
+  const startCooking = useCookingStore((state) => state.startCooking);
+  const resumeCooking = useCookingStore((state) => state.resume);
+
   const title = useMemo(() => {
-    if (stackState.workoutDayId) return 'Workout Detail';
-    if (stackState.recipeId) return 'Recipe Detail';
+    if (stackScreen.key === 'WORKOUT_SESSION') return 'Workout Session';
+    if (stackScreen.key === 'COOKING_SESSION') return 'Cooking Session';
+    if (stackScreen.key === 'WORKOUT_EDITOR') return 'Workout Editor';
+    if (stackScreen.key === 'RECIPE_EDITOR') return 'Recipe Editor';
+    if (stackScreen.key === 'SCHEDULE_EDITOR') return 'Schedule Editor';
+    if (stackScreen.key === 'SCHEDULE_DETAIL') return 'Schedule Detail';
     return activeRoute;
-  }, [activeRoute, stackState.recipeId, stackState.workoutDayId]);
+  }, [activeRoute, stackScreen.key]);
+
+  const hydrateWorkoutRuntime = () => {
+    useWorkoutStore.setState({ workouts: workoutPlans.map(toRuntimeWorkoutTemplate) });
+  };
+
+  const hydrateCookingRuntime = () => {
+    useCookingStore.setState({ recipes: recipes.map(toRuntimeRecipeTemplate) });
+  };
+
+  const beginWorkoutFromPlan = async (plan: WorkoutDayPlan) => {
+    hydrateWorkoutRuntime();
+    await startWorkout(toRuntimeWorkoutTemplate(plan));
+    setStackScreen({ key: 'WORKOUT_SESSION' });
+  };
+
+  const beginCookingFromRecipe = async (recipe: Recipe) => {
+    hydrateCookingRuntime();
+    await startCooking(toRuntimeRecipeTemplate(recipe));
+    setStackScreen({ key: 'COOKING_SESSION' });
+  };
 
   const openRoute = (route: DrawerRoute) => {
     setActiveRoute(route);
-    setStackState({});
+    setStackScreen({ key: 'NONE' });
     setDrawerOpen(false);
   };
 
-  const content = (() => {
-    if (activeRoute === 'Home') {
-      return <HomeScreen />;
-    }
-    if (activeRoute === 'Workout Library') {
-      if (stackState.workoutDayId) {
-        return (
-          <WorkoutDetailScreen
-            dayId={stackState.workoutDayId}
-            onBack={() => setStackState({})}
-          />
-        );
+  const openScheduleItem = async (item: ScheduleItem) => {
+    if (item.type === 'workout' && item.linkedWorkoutId) {
+      const workout = workoutPlans.find((entry) => entry.id === item.linkedWorkoutId);
+      if (workout) {
+        setActiveRoute('Workout Library');
+        await beginWorkoutFromPlan(workout);
+        return;
       }
+    }
+
+    if (item.type === 'cooking' && item.linkedRecipeId) {
+      const recipe = recipes.find((entry) => entry.id === item.linkedRecipeId);
+      if (recipe) {
+        setActiveRoute('Cooking Library');
+        await beginCookingFromRecipe(recipe);
+        return;
+      }
+    }
+
+    setStackScreen({ key: 'SCHEDULE_DETAIL', itemId: item.id });
+  };
+
+  const scheduleDetailItem =
+    stackScreen.key === 'SCHEDULE_DETAIL'
+      ? scheduleItems.find((item) => item.id === stackScreen.itemId)
+      : undefined;
+
+  const content = (() => {
+    if (stackScreen.key === 'WORKOUT_SESSION') {
+      return (
+        <WorkoutSessionScreen
+          onBackToLibrary={() => {
+            setActiveRoute('Workout Library');
+            setStackScreen({ key: 'NONE' });
+          }}
+        />
+      );
+    }
+
+    if (stackScreen.key === 'COOKING_SESSION') {
+      return (
+        <CookingSessionScreen
+          onBackToLibrary={() => {
+            setActiveRoute('Cooking Library');
+            setStackScreen({ key: 'NONE' });
+          }}
+        />
+      );
+    }
+
+    if (stackScreen.key === 'WORKOUT_EDITOR') {
+      return (
+        <WorkoutEditorScreen
+          dayId={stackScreen.dayId}
+          onBack={() => {
+            setActiveRoute('Workout Library');
+            setStackScreen({ key: 'NONE' });
+          }}
+        />
+      );
+    }
+
+    if (stackScreen.key === 'RECIPE_EDITOR') {
+      return (
+        <RecipeEditorScreen
+          recipeId={stackScreen.recipeId}
+          onBack={() => {
+            setActiveRoute('Cooking Library');
+            setStackScreen({ key: 'NONE' });
+          }}
+        />
+      );
+    }
+
+    if (stackScreen.key === 'SCHEDULE_EDITOR') {
+      return (
+        <ScheduleEditorScreen
+          itemId={stackScreen.itemId}
+          onBack={() => {
+            setActiveRoute('Home');
+            setStackScreen({ key: 'NONE' });
+          }}
+        />
+      );
+    }
+
+    if (stackScreen.key === 'SCHEDULE_DETAIL' && scheduleDetailItem) {
+      return (
+        <ScheduleDetailScreen
+          item={scheduleDetailItem}
+          onBack={() => setStackScreen({ key: 'NONE' })}
+        />
+      );
+    }
+
+    if (activeRoute === 'Home') {
+      return (
+        <HomeScreen
+          onStartWorkout={() => {
+            setActiveRoute('Workout Library');
+            setStackScreen({ key: 'NONE' });
+          }}
+          onStartCooking={() => {
+            setActiveRoute('Cooking Library');
+            setStackScreen({ key: 'NONE' });
+          }}
+          onResumeWorkout={() => {
+            hydrateWorkoutRuntime();
+            resumeWorkout();
+            setActiveRoute('Workout Library');
+            setStackScreen({ key: 'WORKOUT_SESSION' });
+          }}
+          onResumeCooking={() => {
+            hydrateCookingRuntime();
+            resumeCooking();
+            setActiveRoute('Cooking Library');
+            setStackScreen({ key: 'COOKING_SESSION' });
+          }}
+          onOpenScheduleItem={(item) => {
+            void openScheduleItem(item);
+          }}
+          onOpenScheduleEditor={(itemId) => setStackScreen({ key: 'SCHEDULE_EDITOR', itemId })}
+        />
+      );
+    }
+
+    if (activeRoute === 'Workout Library') {
       return (
         <WorkoutLibraryScreen
-          onOpenDay={(day: WorkoutDayPlan) => setStackState({ workoutDayId: day.id })}
+          onStartDay={(day) => {
+            void beginWorkoutFromPlan(day);
+          }}
+          onOpenEditor={(dayId) => setStackScreen({ key: 'WORKOUT_EDITOR', dayId })}
         />
       );
     }
-    if (stackState.recipeId) {
-      return (
-        <RecipeDetailScreen
-          recipeId={stackState.recipeId}
-          onBack={() => setStackState({})}
-        />
-      );
-    }
+
     return (
       <CookingLibraryScreen
-        onOpenRecipe={(recipe: Recipe) => setStackState({ recipeId: recipe.id })}
+        onStartRecipe={(recipe) => {
+          void beginCookingFromRecipe(recipe);
+        }}
+        onOpenEditor={(recipeId) => setStackScreen({ key: 'RECIPE_EDITOR', recipeId })}
       />
     );
   })();
